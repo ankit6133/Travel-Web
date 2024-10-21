@@ -16,6 +16,7 @@
                 <version>3.3.1</version> <!-- Use the latest version -->
                 <configuration>
                     <warSourceDirectory>src/main/webapp</warSourceDirectory>
+                    <warName>tourly</warName>
                 </configuration>
             </plugin>
         </plugins>
