@@ -222,60 +222,56 @@ function switchImages(){
 }
 
 function callRESTAPI() {
-    var chosenCity = (selectCity && selectCity.value) ? selectCity.value: '';
+    var chosenCity = (selectCity && selectCity.value) ? selectCity.value : '';
     if (chosenCity.length === 0) {
         backgroundImg.style.backgroundImage = "url('./images/default.jpeg')";
-        return
+        return;
     }
-    var resturl = null;
+
     var getUrl = window.location;
+    var formattedCity = chosenCity.replace(/\s+/g, '_'); // Replace spaces with underscores for URL
+    var restUrl = `${getUrl.protocol}//${getUrl.hostname}:${getUrl.port}/resorts/weather?selectedCity=${formattedCity}`;
 
     var request = new XMLHttpRequest();
-    if (chosenCity === "Paris"){
-        request.open('GET', getUrl.protocol+ "//" + getUrl.hostname + ":" + getUrl.port + "/resorts/weather?selectedCity=Paris", true);
-    }
-    else if (chosenCity === "Las Vegas"){
-        request.open('GET', getUrl.protocol+ "//" + getUrl.hostname + ":" + getUrl.port + "/resorts/weather?selectedCity=Las_Vegas", true);
-    }
-    else if (chosenCity === "San Francisco"){
-        request.open('GET', getUrl.protocol+ "//" + getUrl.hostname + ":" + getUrl.port + "/resorts/weather?selectedCity=San_Francisco", true);
-    }
-    else if (chosenCity === "Miami"){
-        request.open('GET', getUrl.protocol+ "//" + getUrl.hostname + ":" + getUrl.port + "/resorts/weather?selectedCity=Miami", true);
-    }
-    else if (chosenCity === "Cork"){
-        request.open('GET', getUrl.protocol+ "//" + getUrl.hostname + ":" + getUrl.port + "/resorts/weather?selectedCity=Cork", true);
-    }
-    else if (chosenCity === "Barcelona"){
-        request.open('GET', getUrl.protocol+ "//" + getUrl.hostname + ":" + getUrl.port + "/resorts/weather?selectedCity=Barcelona", true);
-    }
-
+    request.open('GET', restUrl, true);
+    
     request.onload = function() {
         // Begin accessing JSON data here
-        try{
-            if (request.status != 500){
+        if (request.status === 200) {
+            try {
                 var data = JSON.parse(this.response);
                 updateForecast(data);
+            } catch (e) {
+                console.error("Error parsing JSON response:", e);
+                // Handle JSON parsing error, perhaps show a message to the user
             }
-        }catch (e){	}
-
-        if (request.status == 500){
-            // Show errors on the UI if we didnt get the data instead of using cached data.
-            // Note: server side should get cached data anyway if API is not available.
-            loadOfflineJSON(function(result){
-                if(result) updateForecast(null);
+        } else if (request.status === 500) {
+            // Handle server error
+            console.error("Server error occurred:", request.statusText);
+            loadOfflineJSON(function(result) {
+                if (result) updateForecast(null);
+            });
+        } else {
+            // Handle other potential errors
+            console.error("Unexpected error:", request.statusText);
+            // Optionally, provide a fallback mechanism
+            loadOfflineJSON(function(result) {
+                if (result) updateForecast(result);
             });
         }
-
-        // If the liberty server has this 500 error, use cached data
-        // if (request.status == 500){
-        //     loadOfflineJSON(function(result){
-        //         if(result) updateForecast(result);
-        //     });
-        // }
     };
+
+    request.onerror = function() {
+        // Handle network errors
+        console.error("Network error occurred.");
+        loadOfflineJSON(function(result) {
+            if (result) updateForecast(result);
+        });
+    };
+
     request.send();
 }
+
 
 function callAvailabilityChecker(dateObj, elem) {
     
