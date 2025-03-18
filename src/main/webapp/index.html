@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meet Our Team - World-Class Employee Directory</title>
+    <style>
+        .logo img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0078ff;
+            --secondary-color: #f8f9fa;
+            --text-color: #333;
+            --background-color: #ffffff;
+            --card-background: #ffffff;
+            --border-radius: 10px;
+            --transition: 0.3s ease-in-out;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Menu */
+        .menu-toggle {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1000;
+            background: none;
+            border: none;
+            color: var(--text-color);
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background: #222;
+            color: white;
+            padding-top: 60px;
+            transition: left 0.3s ease;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background: var(--primary-color);
+        }
+
+        .sidebar.show {
+            left: 0;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #0078ff, #00c6ff);
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        /* Employee Grid */
+        .employee-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 40px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        /* Footer */
+        .footer {
+            background: #222;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hamburger Menu -->
+    <button class="menu-toggle" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+    <nav class="sidebar">
+        <a href="#">Home</a>
+        <a href="#">Team</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+        <a href="#" onclick="toggleDarkMode()">Dark Mode</a>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <img src="weblogo.png" height="100px" width="100px"/>
+        <h1>Meet Our World-Class Team</h1>
+        <p>Driving innovation, excellence and working together to shape the future.</p>
+    </section>
+
+    <!-- Search & Filter -->
+    <div class="search-container" style="text-align: center; margin: 30px auto;">
+        <input type="text" id="search" class="search-box" placeholder="Search by name or department..." onkeyup="filterEmployees()" style="width: 50%; padding: 12px; font-size: 16px; border: 2px solid var(--primary-color); border-radius: 5px;">
+    </div>
+
+    <!-- Employee Grid -->
+    <div id="employee-grid" class="employee-grid"></div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 SmartSolution | Designed with ❤️</p>
+    </footer>
+
+    <script>
+        function toggleMenu() {
+            document.querySelector('.sidebar').classList.toggle('show');
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        function fetchEmployees() {
+    const employeeGrid = document.getElementById('employee-grid');
+    const apiUrl = 'http://169.60.169.3:5555/restv2/testpkg:employees/employees';
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", apiUrl, true);
+    xhr.setRequestHeader("Authorization", "Basic " + btoa("Administrator:manage"));
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                const data = JSON.parse(xhr.responseText);
+                employeeGrid.innerHTML = '';
+                data.employees.forEach(emp => {
+                    employeeGrid.innerHTML += `
+                        <div class="employee-card" style="text-align: center; padding: 20px; border-radius: var(--border-radius); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                            <img src="${emp.profilePicture || 'https://cdn-icons-png.freepik.com/256/6997/6997676.png?semt=ais_hybrid'}" alt="${emp.firstName}" style="width: 120px; height: 120px; border-radius: 50%; margin-bottom: 10px;">
+                            <h2>${emp.firstName} ${emp.lastName}</h2>
+                            <p>${emp.department}</p>
+                            <div class="contact-buttons" style="margin-top: 10px;">
+                                <a href="mailto:${emp.email}" class="email-btn" style="padding: 8px 12px; border-radius: 5px; font-size: 14px; color: white; background: var(--primary-color); text-decoration: none;">Email</a>
+                                <a href="${emp.linkedin || '#'}" class="linkedin-btn" style="padding: 8px 12px; border-radius: 5px; font-size: 14px; color: white; background: #0a66c2; text-decoration: none;">Chat</a>
+                            </div>
+                        </div>`;
+                });
+            } else {
+                console.error(`Error: ${xhr.status} - ${xhr.statusText}`);
+            }
+        }
+    };
+
+    xhr.send();
+}
+
+        function filterEmployees() {
+            let input = document.getElementById('search').value.toLowerCase();
+            document.querySelectorAll('.employee-card').forEach(card => {
+                card.style.display = card.innerText.toLowerCase().includes(input) ? 'block' : 'none';
+            });
+        }
+
+        fetchEmployees();
+
+        const apiUrl = 'http://169.60.169.3:5555/restv2/testpkg:employees/employees';
+            fetch(apiUrl, {
+    method: 'GET',
+    mode: 'no-cors',
+    credentials: "same-origin",
+    headers: {
+        'Authorization': 'Basic ' + btoa('Administrator:manage'), // Encode credentials
+        'Content-Type': 'application/json'
+    },
+    credentials: "include"
+})
+            .then(response => response.json())
+            .then(data => {
+               console.log(data);           });
+    </script>
+</body>
+</html>
